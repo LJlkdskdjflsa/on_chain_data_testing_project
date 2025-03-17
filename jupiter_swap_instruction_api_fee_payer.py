@@ -21,6 +21,7 @@ def main():
     client = Client(
         f"https://mainnet.helius-rpc.com/?api-key={os.getenv('HELIUS_API_KEY')}"
     )
+    payer_wallet = Keypair.from_base58_string(os.getenv("PRIVATE_KEY_TrueNorthTest_2"))
     wallet = Keypair.from_base58_string(os.getenv("PRIVATE_KEY"))
 
     try:
@@ -140,14 +141,14 @@ def main():
 
         # Create the message
         message = MessageV0.try_compile(
-            payer=wallet.pubkey(),
+            payer=payer_wallet.pubkey(),
             instructions=all_instructions,
             address_lookup_table_accounts=[],
             recent_blockhash=client.get_latest_blockhash().value.blockhash,
         )
 
         # Create and sign VersionedTransaction
-        tx = VersionedTransaction(message, [wallet])
+        tx = VersionedTransaction(message, [payer_wallet, wallet])
 
         # Encode transaction
         encoded_tx = base64.b64encode(bytes(tx)).decode("utf-8")
